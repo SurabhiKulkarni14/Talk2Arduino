@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Arduino USB Voice & Button Control</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #1e3c72, #2a5298, #4b6cb7, #8e44ad);
+      background-size: 400% 400%;
+      animation: gradientMove 15s ease infinite;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 8px #000;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      cursor: pointer;
+      margin: 10px;
+      transition: 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    button:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+      transform: scale(1.05);
+    }
+
+    #output {
+      margin-top: 30px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      text-align: left;
+    }
+
+    .floating-description {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 300px;
+      background-color: rgba(255, 255, 255, 0.15);
+      padding: 15px 20px;
+      border-radius: 12px;
+      color: white;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      font-size: 14px;
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      text-align: left;
+    }
+
+    .floating-description h3 {
+      margin-top: 0;
+      font-size: 18px;
+      margin-bottom: 10px;
+      text-shadow: 1px 1px 4px #000;
+    }
+
+    .floating-description ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    .floating-description ul li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔌 Arduino USB Control (Voice + Buttons)</h1>
+
+  <div class="controls">
+    <button onclick="connect()">🔗 Connect to Arduino</button>
+  </div>
+
+  <!-- Manual Control Section -->
+  <div class="controls">
+    <h2>🖱️ Manual Control</h2>
+    <button onclick="sendCommand('light on')">💡 Turn Light ON</button>
+    <button onclick="sendCommand('light off')">💡 Turn Light OFF</button>
+    <button onclick="sendCommand('what about the temperature')">🌡️ Read Temperature</button>
+    <button onclick="sendCommand('stop')">🛑 Stop Action</button>
+  </div>
+
+  <!-- Voice Control Section -->
+  <div class="controls">
+    <h2>🎙️ Voice Control</h2>
+    <button onclick="startListening()">🎤 Start Voice Control</button>
+    <button onclick="stopListening()">🔇 Stop Voice Control</button>
+  </div>
+
+  <pre id="output"></pre>
+
+  <div class="floating-description">
+    <h3>🎤 Speak or Click — You’re in Control!</h3>
+    <ul>
+      <li>🔗 Click <strong>Connect to Arduino</strong> to establish USB connection.</li>
+      <li>🖱️ Use buttons to control Light or Temperature manually.</li>
+      <li>🎙️ Click <strong>Start Voice Control</strong> and say commands like:
+        <ul>
+          <li>"light on"</li>
+          <li>"light off"</li>
+          <li>"temperature"</li>
+        </ul>
+      </li>
+      <li>🔇 Click <strong>Stop Voice Control</strong> to disable speech recognition.</li>
+    </ul>
+  </div>
+
+  <script>
+    let port, writer, reader, recognition;
+
+    async function connect() {
+      try {
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
+
+        writer = port.writable.getWriter();
+        reader = port.readable.getReader();
+
+        readSerial();
+        document.getElementById("output").textContent += "✅ Connected to Arduino\n";
+      } catch (err) {
+        alert("❌ Error: " + err);
+      }
+    }
+
+    async function sendCommand(command) {
+      if (!writer) {
+        alert("⚠️ Connect to Arduino first!");
+        return;
+      }
+      const encoder = new TextEncoder();
+      await writer.write(encoder.encode(command + '\n'));
+      document.getElementById("output").textContent += `📤 Sent: "${command}"\n`;
+    }
+
+    async function readSerial() {
+      const decoder = new TextDecoder();
+      while (true) {
+        try {
+          const { value, done } = await reader.read();
+          if (done) break;
+          document.getElementById("output").textContent += decoder.decode(value);
+        } catch (err) {
+          console.error("Read error: ", err);
+          break;
+        }
+      }
+    }
+
+    function startListening() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("❌ Speech Recognition not supported in this browser.");
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.start();
+      document.getElementById("output").textContent += "🎧 Voice control activated...\n";
+
+      recognition.onresult = function(event) {
+        const speech = event.results[0][0].transcript.toLowerCase();
+        document.getElementById("output").textContent += `🗣️ You said: "${speech}"\n`;
+
+        if (speech.includes("light on")) {
+          sendCommand("light on");
+        } else if (speech.includes("light off")) {
+          sendCommand("light off");
+        } else if (speech.includes("temperature")) {
+          sendCommand("what about the temperature");
+        } else if (speech.includes("stop")) {
+          sendCommand("stop");
+        } else {
+          document.getElementById("output").textContent += "⚠️ Unknown command.\n";
+        }
+      };
+
+      recognition.onerror = function(event) {
+        document.getElementById("output").textContent += `❌ Voice Error: ${event.error}\n`;
+      };
+
+      recognition.onend = function() {
+        document.getElementById("output").textContent += `🛑 Voice control stopped.\n`;
+      };
+    }
+
+    function stopListening() {
+      if (recognition) {
+        recognition.stop();
+        document.getElementById("output").textContent += "🔇 Voice recognition manually stopped.\n";
+      } else {
+        document.getElementById("output").textContent += "⚠️ Voice recognition is not active.\n";
+      }
+    }
+  </script>
+</body>
+</html>
