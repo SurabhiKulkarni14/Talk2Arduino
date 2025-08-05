@@ -1,32 +1,32 @@
 
 [README.md](https://github.com/user-attachments/files/21603241/README.md)
 
-# 🔌 Talk2Arduino – Voice & Button Based USB Control Interface
+#  Talk2Arduino – Voice & Button Based USB Control Interface
 
 **Talk2Arduino** is a browser-based interface that enables seamless control of an Arduino board via USB, using both **speech recognition** and **interactive buttons**. Designed with simplicity and creativity in mind, this project bridges the gap between hardware and modern web technologies — no Wi-Fi module required.
 
 ---
 
-## 🚀 Features
+##  Features
 
-- 🎤 **Voice Command Support**  
+-  **Voice Command Support**  
   Control your Arduino hands-free using built-in speech recognition (Web Speech API).
 
-- 🖱️ **Stylish Button Controls**  
+-  **Stylish Button Controls**  
   Visually enhanced buttons provide an intuitive alternative to voice commands.
 
-- 🔌 **Serial Communication over USB**  
+-  **Serial Communication over USB**  
   Communicates directly with your Arduino using the Web Serial API.
 
-- 🌡️ **Sensor Interactions**  
+-  **Sensor Interactions**  
   Supports temperature readings and custom serial messages from Arduino.
 
-- 🧠 **User-Centric UI**  
+-  **User-Centric UI**  
   Floating descriptions, modern layout, and optional control modes to enhance usability.
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 - HTML, CSS, JavaScript (Frontend)  
 - Web Serial API (for USB communication)  
@@ -35,7 +35,7 @@
 
 ---
 
-## 🧩 Use Cases
+##  Use Cases
 
 - Rapid prototyping and interaction with Arduino without extra modules  
 - Hands-free control for accessibility-focused projects  
@@ -43,7 +43,7 @@
 
 ---
 
-## 📦 Getting Started
+##  Getting Started
 
 1. Plug your Arduino via USB and upload the corresponding sketch.
 2. Open the HTML file in a Chromium-based browser (like Chrome or Edge).
@@ -52,7 +52,7 @@
 
 ---
 
-## 📸 Demo Preview
+##  Demo Preview
 
 > *(Add screenshots or screen recordings here for visual impact)*
 
